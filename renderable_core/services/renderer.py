@@ -32,16 +32,18 @@ class Renderer:
     if jobs_path.is_dir():
       disk_usage = psutil.disk_usage(jobs_path)
 
-      if disk_usage.percent > cache_factor:
+      if disk_usage.percent > self.cache_factor:
         shutil.rmtree(jobs_path)
 
   def render(self, task):
-    scene_path = next(self.path_from_id(task.job.id, 'jobs').glob('*'))
-    sequence_path = self.path_from_id(task.id, 'tasks').resolve()
+    scene_path = str(next(self.path_from_id(task.job.id, 'jobs').glob('*')).resolve())
+    sequence_path = str(self.path_from_id(task.id, 'tasks').resolve())
 
-    command = Template(self.command_template).safe_substitute(
-      scene_path = scene_path.resolve(),
-      sequence_path = sequence_path.resolve(),
+    sequence_path += '/'
+
+    command = Template(self.command_template).substitute(
+      scene_path = scene_path,
+      sequence_path = sequence_path,
       frame_start = task.frame_range.start,
       frame_end = task.frame_range.end)
 
