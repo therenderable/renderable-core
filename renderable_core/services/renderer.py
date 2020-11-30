@@ -6,6 +6,10 @@ import shutil
 import psutil
 
 
+class RubyTemplate(Template):
+  delimiter = '#'
+
+
 class Renderer:
   def __init__(self, command_template, temporary_directory, cache_factor):
     self.command_template = command_template
@@ -41,7 +45,7 @@ class Renderer:
 
     sequence_path += '/'
 
-    command = Template(self.command_template).substitute(
+    command = RubyTemplate(self.command_template).substitute(
       scene_path = scene_path,
       sequence_path = sequence_path,
       frame_start = task.frame_range.start,
