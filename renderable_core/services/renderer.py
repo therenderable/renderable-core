@@ -51,4 +51,13 @@ class Renderer:
       frame_start = task.frame_range.start,
       frame_end = task.frame_range.end)
 
+    import logging
+    logger = logging.getLogger('renderable-box')
+    logger.setLevel(logging.INFO)
+
+    logger.info(scene_path)
+    logger.info(sequence_path)
+    logger.info(command)
+    logger.info(list(self.path_from_id(task.job.id, 'jobs').glob('*')))
+
     subprocess.check_call(command, shell = True)
