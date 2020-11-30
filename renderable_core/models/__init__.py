@@ -4,6 +4,7 @@ from .state import State
 from .action import Action
 from .base import Base
 from .frame_range import FrameRange
+from .health_check import Status, HealthCheckResponse
 from .error import ErrorResponse
 from .control_frame import ControlFrameType, ControlFrame
 from .resource import ResourceDocument, ResourceMessage
