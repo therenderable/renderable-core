@@ -1,13 +1,8 @@
-from string import Template
 from pathlib import Path
 import subprocess
 import shutil
 
 import psutil
-
-
-class RubyTemplate(Template):
-  delimiter = '#'
 
 
 class Renderer:
@@ -45,7 +40,7 @@ class Renderer:
 
     sequence_path += '/'
 
-    command = RubyTemplate(self.command_template).substitute(
+    command = self.command_template.format(
       scene_path = scene_path,
       sequence_path = sequence_path,
       frame_start = task.frame_range.start,
