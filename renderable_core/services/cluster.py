@@ -41,7 +41,6 @@ class Cluster:
     self._drain_manager()
     self._register_secrets()
     self._login_registry()
-    self._create_services()
 
   def _initialize(self):
     try:
@@ -82,9 +81,7 @@ class Cluster:
   def _login_registry(self):
     self.client.login(self.registry_username, self.registry_password, registry = self.registry_base_url)
 
-  def _create_services(self):
-    container_names = self.get_container_names()
-
+  def create_service(self, container_name):
     secrets = [docker.types.SecretReference(secret.id, secret.name) for secret in self.client.secrets.list()]
     environment_variables = [f'{name}={value}' for name, value in self.environment.items()]
 
@@ -94,21 +91,20 @@ class Cluster:
       mem_reservation = int(1 * 1e9),
       mem_limit = int(4 * 1e9))
 
-    for name in container_names:
-      service = {
-        'name': name,
-        'image': f'{self.registry_domain}/{name}:latest',
-        'mode': docker.types.ServiceMode(mode = 'replicated', replicas = 0),
-        'resources': resources,
-        'secrets': secrets,
-        'env': environment_variables
-      }
+    service = {
+      'name': container_name,
+      'image': f'{self.registry_domain}/{container_name}:latest',
+      'mode': docker.types.ServiceMode(mode = 'replicated', replicas = 0),
+      'resources': resources,
+      'secrets': secrets,
+      'env': environment_variables
+    }
 
-      try:
-        self.client.services.create(**service)
-      except docker.errors.APIError as error:
-        if error.status_code != ClusterStatus.resource_already_exists:
-          raise error
+    try:
+      self.client.services.create(**service)
+    except docker.errors.APIError as error:
+      if error.status_code != ClusterStatus.resource_already_exists:
+        raise error
 
   def get_container_names(self):
     request = requests.get(f'{self.registry_base_url}/_catalog', auth = (self.registry_username, self.registry_password))
