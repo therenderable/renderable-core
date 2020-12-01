@@ -85,11 +85,14 @@ class Cluster:
     secrets = [docker.types.SecretReference(secret.id, secret.name) for secret in self.client.secrets.list()]
     environment_variables = [f'{name}={value}' for name, value in self.environment.items()]
 
+    def giga_prefix(value):
+      return value * int(1e9)
+
     resources = docker.types.Resources(
-      cpu_reservation = int(1 * 1e9),
-      cpu_limit = int(4 * 1e9),
-      mem_reservation = int(1 * 1e9),
-      mem_limit = int(4 * 1e9))
+      cpu_reservation = giga_prefix(1),
+      cpu_limit = giga_prefix(4),
+      mem_reservation = giga_prefix(1),
+      mem_limit = giga_prefix(4))
 
     service = {
       'name': container_name,
@@ -97,7 +100,8 @@ class Cluster:
       'mode': docker.types.ServiceMode(mode = 'replicated', replicas = 0),
       'resources': resources,
       'secrets': secrets,
-      'env': environment_variables
+      'env': environment_variables,
+      'stop_grace_period': giga_prefix(48 * 3600)
     }
 
     try:
