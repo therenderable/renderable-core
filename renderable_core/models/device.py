@@ -10,6 +10,8 @@ from . import ObjectID, NodeType, Base
 class DeviceDocument(Base):
   id: ObjectID = Field(default_factory = ObjectID, alias = '_id')
   node_type: NodeType = Field(...)
+  cluster_address: str = Field(...)
+  token: str = Field(...)
   joined_at: datetime = Field(default_factory = utils.utc_now)
 
 
@@ -20,5 +22,6 @@ class DeviceRequest(Base):
 class DeviceResponse(Base):
   id: ObjectID = Field(...)
   node_type: NodeType = Field(...)
-  token: Optional[str] = None
+  cluster_address: str = Field(...)
+  token: str = Field(...)
   joined_at: datetime = Field(...)
