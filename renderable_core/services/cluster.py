@@ -101,9 +101,9 @@ class Cluster:
       return value * int(1e9)
 
     resources = docker.types.Resources(
-      cpu_reservation = giga_prefix(1),
+      cpu_reservation = giga_prefix(2),
       cpu_limit = giga_prefix(4),
-      mem_reservation = giga_prefix(1),
+      mem_reservation = giga_prefix(2),
       mem_limit = giga_prefix(4))
 
     service = {
