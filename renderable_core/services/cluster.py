@@ -81,6 +81,18 @@ class Cluster:
   def _login_registry(self):
     self.client.login(self.registry_username, self.registry_password, registry = self.registry_base_url)
 
+  def get_address(self):
+    return f'{self.domain_ip}:{self.manager_port}'
+
+  def get_container_names(self):
+    request = requests.get(f'{self.registry_base_url}/_catalog', auth = (self.registry_username, self.registry_password))
+    request.raise_for_status()
+
+    response = request.json()
+    containers = response['repositories']
+
+    return containers
+
   def create_service(self, container_name):
     secrets = [docker.types.SecretReference(secret.id, secret.name) for secret in self.client.secrets.list()]
     environment_variables = [f'{name}={value}' for name, value in self.environment.items()]
@@ -109,15 +121,6 @@ class Cluster:
     except docker.errors.APIError as error:
       if error.status_code != ClusterStatus.resource_already_exists:
         raise error
-
-  def get_container_names(self):
-    request = requests.get(f'{self.registry_base_url}/_catalog', auth = (self.registry_username, self.registry_password))
-    request.raise_for_status()
-
-    response = request.json()
-    containers = response['repositories']
-
-    return containers
 
   def join(self, device):
     node_type = device['node_type'].capitalize()
