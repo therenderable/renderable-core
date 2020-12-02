@@ -50,8 +50,6 @@ class Cluster:
       if error.status_code != ClusterStatus.node_already_initialized:
         raise error
 
-    self.client.swarm.reload()
-
   def _drain_manager(self):
     info = self.client.info()
 
@@ -123,6 +121,8 @@ class Cluster:
         raise error
 
   def join(self, device):
+    self.client.swarm.reload()
+
     node_type = device['node_type'].capitalize()
 
     return self.client.swarm.attrs['JoinTokens'][node_type]
