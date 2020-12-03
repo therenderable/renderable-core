@@ -3,6 +3,8 @@ from enum import Enum
 import requests
 import docker
 
+from .. import utils
+
 
 class ClusterStatus(int, Enum):
   node_already_initialized = 503
@@ -45,7 +47,9 @@ class Cluster:
   def _initialize(self):
     try:
       self.client.swarm.init(
-        advertise_addr = self.domain_ip, listen_addr = f'0.0.0.0:{self.manager_port}')
+        advertise_addr = self.domain_ip,
+        listen_addr = f'0.0.0.0:{self.manager_port}',
+        dispatcher_heartbeat_period = utils.unit_prefix(120, 'G'))
     except docker.errors.APIError as error:
       if error.status_code != ClusterStatus.node_already_initialized:
         raise error
@@ -95,14 +99,11 @@ class Cluster:
     secrets = [docker.types.SecretReference(secret.id, secret.name) for secret in self.client.secrets.list()]
     environment_variables = [f'{name}={value}' for name, value in self.environment.items()]
 
-    def giga_prefix(value):
-      return value * int(1e9)
-
     resources = docker.types.Resources(
-      cpu_reservation = giga_prefix(2),
-      cpu_limit = giga_prefix(4),
-      mem_reservation = giga_prefix(2),
-      mem_limit = giga_prefix(4))
+      cpu_reservation = utils.unit_prefix(2, 'G'),
+      cpu_limit = utils.unit_prefix(4, 'G'),
+      mem_reservation = utils.unit_prefix(2, 'G'),
+      mem_limit = utils.unit_prefix(4, 'G'))
 
     service = {
       'name': container_name,
@@ -111,7 +112,7 @@ class Cluster:
       'resources': resources,
       'secrets': secrets,
       'env': environment_variables,
-      'stop_grace_period': giga_prefix(48 * 3600)
+      'stop_grace_period': utils.unit_prefix(48 * 3600, 'G')
     }
 
     try:

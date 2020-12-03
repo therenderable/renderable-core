@@ -27,6 +27,30 @@ def get_file_extension(filename):
 
   return filename.suffix
 
+def unit_prefix(value, prefix_name):
+  prefixes = {
+    'y': 1e-24,
+    'z': 1e-21,
+    'a': 1e-18,
+    'f': 1e-15,
+    'p': 1e-12,
+    'n': 1e-9,
+    'u': 1e-6,
+    'm': 1e-3,
+    'c': 1e-2,
+    'd': 1e-1,
+    'k': 1e3,
+    'M': 1e6,
+    'G': 1e9,
+    'T': 1e12,
+    'P': 1e15,
+    'E': 1e18,
+    'Z': 1e21,
+    'Y': 1e24
+  }
+
+  return value * prefixes[prefix_name]
+
 def compress_files(files):
   zip_data = BytesIO()
 
