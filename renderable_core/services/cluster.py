@@ -49,7 +49,7 @@ class Cluster:
       self.client.swarm.init(
         advertise_addr = self.domain_ip,
         listen_addr = f'0.0.0.0:{self.manager_port}',
-        dispatcher_heartbeat_period = utils.unit_prefix(120, 'G'))
+        dispatcher_heartbeat_period = int(utils.unit_prefix(120, 'G')))
     except docker.errors.APIError as error:
       if error.status_code != ClusterStatus.node_already_initialized:
         raise error
@@ -100,10 +100,10 @@ class Cluster:
     environment_variables = [f'{name}={value}' for name, value in self.environment.items()]
 
     resources = docker.types.Resources(
-      cpu_reservation = utils.unit_prefix(2, 'G'),
-      cpu_limit = utils.unit_prefix(4, 'G'),
-      mem_reservation = utils.unit_prefix(2, 'G'),
-      mem_limit = utils.unit_prefix(4, 'G'))
+      cpu_reservation = int(utils.unit_prefix(2, 'G')),
+      cpu_limit = int(utils.unit_prefix(4, 'G')),
+      mem_reservation = int(utils.unit_prefix(2, 'G')),
+      mem_limit = int(utils.unit_prefix(4, 'G')))
 
     service = {
       'name': container_name,
@@ -112,7 +112,7 @@ class Cluster:
       'resources': resources,
       'secrets': secrets,
       'env': environment_variables,
-      'stop_grace_period': utils.unit_prefix(48 * 3600, 'G')
+      'stop_grace_period': int(utils.unit_prefix(48 * 3600, 'G'))
     }
 
     try:
