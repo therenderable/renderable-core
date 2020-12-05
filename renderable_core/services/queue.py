@@ -4,15 +4,17 @@ import pika
 
 
 class Queue:
-  def __init__(self, hostname, port, username, password):
+  def __init__(self, hostname, port, username, password, heartbeat = 120):
     self.hostname = hostname
     self.port = port
     self.username = username
     self.password = password
+    self.heartbeat = heartbeat
 
     credentials = pika.PlainCredentials(self.username, self.password)
 
-    self.parameters = pika.ConnectionParameters(self.hostname, self.port, '/', credentials)
+    self.parameters = pika.ConnectionParameters(
+      self.hostname, self.port, '/', credentials, heartbeat = self.heartbeat)
 
   def _wrap_callback(self, callback, model):
     def on_message_callback(channel, method, properties, body):
@@ -24,7 +26,7 @@ class Queue:
   def publish(self, message, routing_key):
     raise NotImplementedError
 
-  def consume(self, callback, routing_key):
+  def consume(self, callback, routing_key, model):
     raise NotImplementedError
 
 
