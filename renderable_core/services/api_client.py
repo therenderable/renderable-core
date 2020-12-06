@@ -3,11 +3,11 @@ from pathlib import Path
 
 import requests
 
-from ..models import TaskRequest, TaskResponse
+from ..models import DeviceRequest, DeviceResponse, TaskRequest, TaskResponse
 
 
 class APIClient:
-  def __init__(self, hostname, port, version, secure, access_key, temporary_directory):
+  def __init__(self, hostname, port, version, secure, access_key = None, temporary_directory = None):
     self.hostname = hostname
     self.port = port
     self.version = version
@@ -33,6 +33,24 @@ class APIClient:
 
   def path_from_id(self, id, prefix):
     return self.temporary_directory / Path(f'{prefix}/{id}')
+
+  def register_device(self, node_type):
+    url = self.url_from_path(f'devices')
+
+    device = DeviceRequest(node_type = node_type)
+
+    response = requests.post(url, json = device.dict())
+    response.raise_for_status()
+
+    return DeviceResponse(**response.json())
+
+  def get_device(self, id):
+    url = self.url_from_path(f'devices/{id}')
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    return DeviceResponse(**response.json())
 
   def get_task(self, id):
     url = self.url_from_path(f'tasks/{id}')
