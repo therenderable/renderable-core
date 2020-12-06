@@ -35,7 +35,7 @@ class APIClient:
     return self.temporary_directory / Path(f'{prefix}/{id}')
 
   def register_device(self, node_type):
-    url = self.url_from_path(f'devices')
+    url = self.url_from_path(f'devices/')
 
     device = DeviceRequest(node_type = node_type)
 
