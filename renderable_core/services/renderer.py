@@ -11,22 +11,22 @@ class Renderer:
     self.temporary_directory = temporary_directory
     self.cache_factor = cache_factor
 
-  def path_from_id(self, id, prefix):
+  def _path_from_id(self, id, prefix):
     return self.temporary_directory / Path(f'{prefix}/{id}')
 
   def has_cache(self, task):
-    path = self.path_from_id(task.job.id, 'jobs')
+    path = self._path_from_id(task.job.id, 'jobs')
     has_files = len(list(path.glob('*'))) > 0 if path.is_dir() else False
 
     return has_files
 
   def delete_cache(self, task):
-    task_path = self.path_from_id(task.id, 'tasks')
+    task_path = self._path_from_id(task.id, 'tasks')
 
     if task_path.is_dir():
       shutil.rmtree(task_path)
 
-    jobs_path = self.path_from_id('', 'jobs')
+    jobs_path = self._path_from_id('', 'jobs')
 
     if jobs_path.is_dir():
       disk_usage = psutil.disk_usage(jobs_path)
@@ -35,8 +35,8 @@ class Renderer:
         shutil.rmtree(jobs_path)
 
   def render(self, task):
-    scene_path = str(next(self.path_from_id(task.job.id, 'jobs').glob('*')).resolve())
-    sequence_path = str(self.path_from_id(task.id, 'tasks').resolve())
+    scene_path = str(next(self._path_from_id(task.job.id, 'jobs').glob('*')).resolve())
+    sequence_path = str(self._path_from_id(task.id, 'tasks').resolve())
 
     sequence_path += '/'
 

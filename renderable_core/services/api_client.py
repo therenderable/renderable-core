@@ -23,19 +23,19 @@ class APIClient:
       'x-api-key': access_key
     }
 
-  def url_from_path(self, path):
+  def _url_from_path(self, path):
     return f'{self.base_url}/{path}'
 
-  def filename_from_resource_url(self, url, prefix):
+  def _filename_from_resource_url(self, url, prefix):
     id, filename = url.split('/')[-2:]
 
     return self.temporary_directory / Path(f'{prefix}/{id}/{filename}')
 
-  def path_from_id(self, id, prefix):
+  def _path_from_id(self, id, prefix):
     return self.temporary_directory / Path(f'{prefix}/{id}')
 
   def register_device(self, node_type):
-    url = self.url_from_path(f'devices/')
+    url = self._url_from_path(f'devices/')
 
     device = DeviceRequest(node_type = node_type)
 
@@ -45,7 +45,7 @@ class APIClient:
     return DeviceResponse(**response.json())
 
   def get_device(self, id):
-    url = self.url_from_path(f'devices/{id}')
+    url = self._url_from_path(f'devices/{id}')
 
     response = requests.get(url)
     response.raise_for_status()
@@ -53,7 +53,7 @@ class APIClient:
     return DeviceResponse(**response.json())
 
   def get_task(self, id):
-    url = self.url_from_path(f'tasks/{id}')
+    url = self._url_from_path(f'tasks/{id}')
 
     response = requests.get(url, headers = self.authentication_header)
     response.raise_for_status()
@@ -61,7 +61,7 @@ class APIClient:
     return TaskResponse(**response.json())
 
   def update_task_state(self, task, state):
-    url = self.url_from_path(f'tasks/{task.id}')
+    url = self._url_from_path(f'tasks/{task.id}')
 
     task = TaskRequest(state = state)
 
@@ -78,7 +78,7 @@ class APIClient:
     response = requests.get(url)
     response.raise_for_status()
 
-    filename = self.filename_from_resource_url(url, 'jobs')
+    filename = self._filename_from_resource_url(url, 'jobs')
 
     os.makedirs(filename.parent, exist_ok = True)
 
@@ -88,9 +88,9 @@ class APIClient:
     return filename
 
   def upload_task_resources(self, task):
-    url = self.url_from_path(f'tasks/{task.id}/images')
+    url = self._url_from_path(f'tasks/{task.id}/images')
 
-    path = self.path_from_id(task.id, 'tasks')
+    path = self._path_from_id(task.id, 'tasks')
     filenames = path.glob('*')
 
     images = [('images', (filename.name, open(filename, 'rb'))) for filename in filenames]
