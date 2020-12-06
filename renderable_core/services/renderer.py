@@ -12,7 +12,7 @@ class Renderer:
     self.cache_factor = cache_factor
 
   def path_from_id(self, id, prefix):
-    return Path(f'{self.temporary_directory}/{prefix}/{id}')
+    return self.temporary_directory / Path(f'{prefix}/{id}')
 
   def has_cache(self, task):
     path = self.path_from_id(task.job.id, 'jobs')

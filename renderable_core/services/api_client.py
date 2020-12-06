@@ -29,10 +29,10 @@ class APIClient:
   def filename_from_resource_url(self, url, prefix):
     id, filename = url.split('/')[-2:]
 
-    return Path(f'{self.temporary_directory}/{prefix}/{id}/{filename}')
+    return self.temporary_directory / Path(f'{prefix}/{id}/{filename}')
 
   def path_from_id(self, id, prefix):
-    return Path(f'{self.temporary_directory}/{prefix}/{id}')
+    return self.temporary_directory / Path(f'{prefix}/{id}')
 
   def get_task(self, id):
     url = self.url_from_path(f'tasks/{id}')
