@@ -7,3 +7,4 @@ from .storage import Storage
 from .queue import WorkQueue, EventQueue
 from .renderer import Renderer
 from .executor import Executor
+from .machine import Machine
