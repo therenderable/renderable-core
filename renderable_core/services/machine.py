@@ -1,3 +1,4 @@
+from pathlib import Path
 import json
 import platform
 import subprocess
@@ -8,12 +9,15 @@ class Machine:
     self.name = name
     self.path = path
 
-    executable_intermediate_path = self.path / 'bin'
+    self.platform_name = platform.system()
 
-    self.executable = executable_intermediate_path / 'docker-machine'
+    extra_args = '' if self.platform_name == 'Windows' else 'sudo'
+    executable_path = (self.path / Path('bin/docker-machine')).resolve()
+
+    self.executable_command = f'{extra_args} {executable_path}'
 
   def _command_from_args(self, args):
-    return f'{self.executable} --storage-path {self.path} {args}'
+    return f'{self.executable_command} --storage-path {self.path} {args}'
 
   def list_machines(self):
     command = self._command_from_args('ls')
@@ -47,7 +51,7 @@ class Machine:
     return machine['state'] == 'running'
 
   def create(self, cpus, memory, storage):
-    driver = 'hyperv' if platform.system() == 'Windows' else 'virtualbox'
+    driver = 'hyperv' if self.platform_name == 'Windows' else 'virtualbox'
     extra_args = '--hyperv-virtual-switch "Default Switch"' if driver == 'hyperv' else ''
 
     create_command = self._command_from_args(
