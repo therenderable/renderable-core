@@ -84,7 +84,8 @@ class Machine:
       self.remove()
       self.create(cpus, memory, storage)
 
-    return update
+    if not self.running():
+      self.start()
 
   def start(self):
     command = self._command_from_args(f'start {self.name}')
