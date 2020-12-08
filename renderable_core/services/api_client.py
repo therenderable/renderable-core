@@ -94,7 +94,7 @@ class APIClient:
     url = self._url_from_path(f'jobs/{id}/ws').replace('http', 'ws')
 
     async def process_message():
-      async with websockets.connect(url, ping_interval = None, close_timeout = timeout) as websocket:
+      async with websockets.connect(url, close_timeout = timeout, ping_interval = None) as websocket:
         while True:
           data = await websocket.recv()
           json_data = json.loads(data)
