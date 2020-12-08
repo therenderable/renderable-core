@@ -5,7 +5,6 @@ import json
 import requests
 import websockets
 
-from .. import utils
 from ..models import Action, ControlFrameType, ControlFrame, DeviceRequest, DeviceResponse, \
   JobRequest, JobActionRequest, JobResponse, TaskRequest, TaskResponse
 
@@ -93,6 +92,10 @@ class APIClient:
   def listen_job(self, id, callback, timeout = 60):
     url = self._url_from_path(f'jobs/{id}/ws').replace('http', 'ws')
 
+    async def wakeup():
+      while True:
+        await asyncio.sleep(1)
+
     async def process_message():
       async with websockets.connect(url, close_timeout = timeout, ping_interval = None) as websocket:
         while True:
@@ -110,7 +113,10 @@ class APIClient:
           else:
             callback(response)
 
-    utils.run_as_sync(process_message())
+    loop = asyncio.get_event_loop()
+
+    loop.create_task(wakeup())
+    loop.run_until_complete(process_message())
 
   def get_task(self, id):
     url = self._url_from_path(f'tasks/{id}')
