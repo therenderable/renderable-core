@@ -12,6 +12,7 @@ with open(convert_path(f'{package_directory}/package.py'), 'r') as file:
 
 requirements = [
   'numpy>=1.19.0',
+  'tabulate>=0.8.7',
   'psutil>=5.7.0',
   'requests>=2.25.0',
   'websockets>=8.0',

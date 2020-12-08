@@ -6,6 +6,9 @@ import asyncio
 from functools import partial
 
 import numpy as np
+from tabulate import tabulate
+
+from ..models import State
 
 
 def utc_now():
@@ -77,3 +80,33 @@ def group_frames(start, end, parallelism):
   groups = np.split(frames, np.arange(frame_batch, len(frames), frame_batch))
 
   return [group.tolist() for group in groups]
+
+def job_statistics(jobs):
+  def filter_by_completed(job):
+    return job.state == State.done or job.state == State.error
+
+  def format_job(job):
+    task_count = len(job.tasks)
+    completed_count = len(list(filter(filter_by_completed, job.tasks)))
+    completed_percentage = completed_count / task_count * 100 if task_count > 0 else 0
+
+    progress = f'{completed_percentage:.2f}%'
+    frame_range = f'{job.frame_range.start} - {job.frame_range.end}'
+    sequence = '-' if job.sequence_url is None else job.sequence_url
+
+    datetime_format = '%x %X'
+
+    created_at = job.created_at.strftime(datetime_format)
+    updated_at = job.updated_at.strftime(datetime_format)
+
+    return [job.id, job.state, progress, job.container_name, frame_range,
+      job.parallelism, sequence, created_at, updated_at]
+
+  headers = ['ID', 'State', 'Progress', 'Container Name', 'Frame Range',
+    'Parallelism', 'Sequence', 'Created At', 'Updated At']
+
+  data = list(map(format_job, jobs))
+
+  table = tabulate(data, headers = headers, stralign = 'center', numalign = 'center')
+
+  return str(table)
