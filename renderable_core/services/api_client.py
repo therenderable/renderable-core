@@ -65,11 +65,11 @@ class APIClient:
     return JobResponse(**response.json())
 
   def upload_job_scene(self, id, scene_path):
-    url = self._url_from_path(f'jobs/{id}')
+    url = self._url_from_path(f'jobs/{id}/scene')
 
-    files = { 'scene': (scene_path.name, open(scene_path, 'rb')) }
+    scene = { 'scene': (scene_path.name, open(scene_path, 'rb')) }
 
-    response = requests.post(url, files = files)
+    response = requests.post(url, files = scene)
     response.raise_for_status()
 
     return JobResponse(**response.json())
