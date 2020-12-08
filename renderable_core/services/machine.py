@@ -75,8 +75,10 @@ class Machine:
     else:
       machine = self.inspect()
 
+      memory_key = 'MemSize' if self.platform_name == 'Windows' else 'Memory'
+
       update_cpus = machine['Driver']['CPU'] != cpus
-      update_memory = machine['Driver']['MemSize'] != memory
+      update_memory = machine['Driver'][memory_key] != memory
       update_storage = machine['Driver']['DiskSize'] != storage
 
       update = update_cpus or update_memory or update_storage
