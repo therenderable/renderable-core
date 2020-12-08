@@ -14,6 +14,7 @@ requirements = [
   'numpy>=1.19.0',
   'psutil>=5.7.0',
   'requests>=2.25.0',
+  'websockets>=8.0',
   'pydantic>=1.7.0',
   'docker>=4.3.0',
   'pymongo>=3.11.0',

@@ -1,9 +1,13 @@
 import os
 from pathlib import Path
+import json
 
 import requests
+import websockets
 
-from ..models import DeviceRequest, DeviceResponse, TaskRequest, TaskResponse
+from .. import utils
+from ..models import Action, ControlFrameType, ControlFrame, DeviceRequest, DeviceResponse, \
+  JobRequest, JobActionRequest, JobResponse, TaskRequest, TaskResponse
 
 
 class APIClient:
@@ -35,7 +39,7 @@ class APIClient:
     return self.temporary_directory / Path(f'{prefix}/{id}')
 
   def register_device(self, node_type):
-    url = self._url_from_path(f'devices/')
+    url = self._url_from_path('devices/')
 
     device = DeviceRequest(node_type = node_type)
 
@@ -51,6 +55,62 @@ class APIClient:
     response.raise_for_status()
 
     return DeviceResponse(**response.json())
+
+  def create_job(self, job):
+    url = self._url_from_path('jobs/')
+
+    response = requests.post(url, json = job.dict())
+    response.raise_for_status()
+
+    return JobResponse(**response.json())
+
+  def upload_job_scene(self, id, scene_path):
+    url = self._url_from_path(f'jobs/{id}')
+
+    files = { 'scene': (scene_path.name, open(scene_path, 'rb')) }
+
+    response = requests.post(url, files = files)
+    response.raise_for_status()
+
+    return JobResponse(**response.json())
+
+  def update_job_state(self, id, action):
+    url = self._url_from_path(f'jobs/{id}')
+
+    job_action = JobActionRequest(action = action)
+
+    response = requests.post(url, json = job_action.dict())
+    response.raise_for_status()
+
+    return JobResponse(**response.json())
+
+  def submit_job(self, job, scene_path):
+    job_response = self.create_job(job)
+    job_response = self.upload_job_scene(job_response.id, scene_path)
+
+    return self.update_job_state(job_response.id, Action.start)
+
+  def listen_job(self, id, callback, timeout = 60):
+    url = self._url_from_path(f'jobs/{id}/ws').replace('http', 'ws')
+
+    async def process_message():
+      async with websockets.connect(url, ping_interval = None, close_timeout = timeout) as websocket:
+        while True:
+          data = await websocket.recv()
+          json_data = json.loads(data)
+
+          try:
+            response = ControlFrame(**json_data)
+          except:
+            response = JobResponse(**json_data)
+
+          if isinstance(response, ControlFrame):
+            pong_frame = ControlFrame(type = ControlFrameType.pong)
+            await websocket.send(pong_frame.json())
+          else:
+            callback(response)
+
+    utils.run_as_sync(process_message())
 
   def get_task(self, id):
     url = self._url_from_path(f'tasks/{id}')

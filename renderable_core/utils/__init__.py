@@ -11,7 +11,10 @@ import numpy as np
 def utc_now():
   return datetime.datetime.now(datetime.timezone.utc)
 
-def run_as_sync(coroutine, loop):
+def run_as_sync(coroutine, loop = None):
+  if loop is None:
+    loop = asyncio.get_event_loop()
+
   future = asyncio.run_coroutine_threadsafe(coroutine, loop)
 
   return future.result()
