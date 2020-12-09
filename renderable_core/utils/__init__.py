@@ -8,8 +8,6 @@ from functools import partial
 import numpy as np
 from tabulate import tabulate
 
-from ..models import State
-
 
 def utc_now():
   return datetime.datetime.now(datetime.timezone.utc)
@@ -83,7 +81,7 @@ def group_frames(start, end, parallelism):
 
 def job_statistics(jobs):
   def filter_by_completed(job):
-    return job.state == State.done or job.state == State.error
+    return job.state == 'done' or job.state == 'error'
 
   def format_job(job):
     task_count = len(job.tasks)
