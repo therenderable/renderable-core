@@ -1,4 +1,5 @@
-from datetime import datetime
+import time
+from threading import Thread, Lock
 
 import docker
 
@@ -18,17 +19,44 @@ class Autoscaler:
 
     self.client = docker.DockerClient(f'https://{self.hostname}:{self.port}', tls = tls_config)
 
-  def scale(self, container_name, task_count, upscaling):
+    self.requests = {}
+    self.requests_lock = Lock()
+
+    thread = Thread(target = self._process_scaling, daemon = True)
+    thread.start()
+
+  def _process_scaling(self):
+    while True:
+      self.requests_lock.acquire()
+
+      for container_name, delta in self.requests.items():
+        if delta != 0:
+          try:
+            self._update_service(container_name, delta)
+            self.requests[container_name] = 0
+          except:
+            pass
+
+      self.requests_lock.release()
+
+      time.sleep(self.cooldown_period)
+
+  def _update_service(self, container_name, delta):
     service = self.client.services.get(container_name)
-
-    last_updated_time = datetime.fromisoformat(service.attrs['UpdatedAt'][:26])
-    last_update_period = (datetime.utcnow() - last_updated_time).total_seconds()
-
-    assert last_update_period > self.cooldown_period
-
-    delta = task_count if upscaling else -task_count
 
     replicas = service.attrs['Spec']['Mode']['Replicated']['Replicas']
     target_replicas = int(max(replicas + delta, 0))
 
     service.scale(target_replicas)
+
+  def scale(self, container_name, task_count, upscaling):
+    self.requests_lock.acquire()
+
+    if container_name not in self.requests.keys():
+      self.requests[container_name] = 0
+
+    delta = task_count if upscaling else -task_count
+
+    self.requests[container_name] += delta
+
+    self.requests_lock.release()
