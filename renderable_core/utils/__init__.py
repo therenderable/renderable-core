@@ -107,6 +107,6 @@ def job_statistics(jobs):
 
   data = list(map(format_job, jobs))
 
-  table = tabulate(data, headers = headers, stralign = 'center', numalign = 'center')
+  table = tabulate(data, headers = headers, stralign = 'center', numalign = 'center', tablefmt = 'presto')
 
   return str(table)
