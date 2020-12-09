@@ -90,6 +90,14 @@ class APIClient:
 
     return self.update_job_state(job_response.id, Action.start)
 
+  def get_job(self, id):
+    url = self._url_from_path(f'jobs/{id}')
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    return JobResponse(**response.json())
+
   def listen_job(self, id, callback, timeout = 60):
     url = self._url_from_path(f'jobs/{id}/ws').replace('http', 'ws')
 
