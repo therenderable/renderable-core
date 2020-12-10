@@ -5,10 +5,11 @@ import docker
 
 
 class Autoscaler:
-  def __init__(self, hostname, port, certificate_path, cooldown_period):
+  def __init__(self, hostname, port, certificate_path, cleanup_period, cooldown_period):
     self.hostname = hostname
     self.port = port
     self.certificate_path = certificate_path
+    self.cleanup_period = cleanup_period
     self.cooldown_period = cooldown_period
 
     public_certificate_path = str(self.certificate_path / 'cert.pem')
@@ -22,10 +23,28 @@ class Autoscaler:
     self.requests = {}
     self.requests_lock = Lock()
 
-    thread = Thread(target = self._process_scaling, daemon = True)
-    thread.start()
+    cleanup_thread = Thread(target = self._cleanup_nodes, daemon = True)
+    cleanup_thread.start()
 
-  def _process_scaling(self):
+    scaling_thread = Thread(target = self._scale_services, daemon = True)
+    scaling_thread.start()
+
+  def _cleanup_nodes(self):
+    def filter_by_status(node):
+      return node.attrs['Status']['State'] == 'down'
+
+    while True:
+      try:
+        nodes = list(filter(filter_by_status, self.client.nodes.list()))
+
+        for node in nodes:
+          node.remove(force = True)
+      except:
+        pass
+
+      time.sleep(self.cleanup_period)
+
+  def _scale_services(self):
     while True:
       self.requests_lock.acquire()
 

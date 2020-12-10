@@ -80,12 +80,12 @@ def group_frames(start, end, parallelism):
   return [group.tolist() for group in groups]
 
 def job_statistics(jobs):
-  def filter_by_completed(job):
+  def filter_by_state(job):
     return job.state == 'done' or job.state == 'error'
 
   def format_job(job):
     task_count = len(job.tasks)
-    completed_count = len(list(filter(filter_by_completed, job.tasks)))
+    completed_count = len(list(filter(filter_by_state, job.tasks)))
     completed_percentage = completed_count / task_count * 100 if task_count > 0 else 0
 
     progress = f'{completed_percentage:.2f}%'
