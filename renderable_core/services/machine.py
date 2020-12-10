@@ -50,6 +50,13 @@ class Machine:
 
     return machine['state'] == 'running'
 
+  def attached(self):
+    command = self._command_from_args(f'ssh {self.name} docker info --format {{{{.Swarm.LocalNodeState}}}}')
+
+    output = subprocess.check_output(command, shell = True).decode().strip()
+
+    return output != 'inactive'
+
   def create(self, cpus, memory, storage):
     driver = 'hyperv' if self.platform_name == 'Windows' else 'virtualbox'
     extra_args = '--hyperv-virtual-switch "Default Switch"' if driver == 'hyperv' else ''
