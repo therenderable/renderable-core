@@ -101,9 +101,7 @@ class Cluster:
 
     resources = docker.types.Resources(
       cpu_reservation = int(utils.unit_prefix(2, 'G')),
-      cpu_limit = int(utils.unit_prefix(4, 'G')),
-      mem_reservation = int(utils.unit_prefix(2, 'G')),
-      mem_limit = int(utils.unit_prefix(4, 'G')))
+      mem_reservation = int(utils.unit_prefix(2, 'G')))
 
     service = {
       'name': container_name,
