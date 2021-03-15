@@ -2,7 +2,7 @@ FROM python:3.7
 
 LABEL description "Renderable core library."
 LABEL version "1.0.0"
-LABEL maintainer "Danilo Peixoto <danilo@therenderable.com>"
+LABEL maintainer "Danilo Peixoto <danilopeixoto@outlook.com>"
 
 WORKDIR /usr/src/renderable-core/
 COPY . .
